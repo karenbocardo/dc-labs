@@ -186,8 +186,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if nVertices > 2 {
 		collision := false
 		if nVertices > 3 {
-			// check intersection
-			// if there is -> collision = true
+			if hasCollision(vertices) {
+				collision = true
+			}
 		}
 		if nVertices == 3 || !collision {
 			// Results gathering
