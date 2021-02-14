@@ -32,9 +32,6 @@ func crossProduct(a, b Vector) float64 {
 func main() {
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
-	// \(-2, 2\),\(1, 4\),\(3, 1\),\(-3, -2\),\(0, -3\),\(2, -2\)
-	//points := []Point{{-2, 2}, {1, 4}, {3, 1}, {-3, -2}, {0, -3}, {2, -2}}
-	//fmt.Println(hasCollision(points))
 }
 
 //generatePoints array
@@ -106,6 +103,7 @@ func doIntersect(p1, q1, p2, q2 Point) bool {
 	return false
 }
 
+// Checks wether a list of vertices of a shape have a collision between them
 func hasCollision(points []Point) bool {
 	points = append(points, points[0])
 	nPoints := len(points)
@@ -196,9 +194,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			perimeter := getPerimeter(vertices)
 
 			// Response construction
-			response += fmt.Sprintf(" - Vertices        : %v\n", vertices)
-			response += fmt.Sprintf(" - Perimeter       : %v\n", perimeter)
-			response += fmt.Sprintf(" - Area            : %v\n", area)
+			response += fmt.Sprintf(" - Vertices    : %v\n", vertices)
+			response += fmt.Sprintf(" - Perimeter   : %v\n", perimeter)
+			response += fmt.Sprintf(" - Area        : %v\n", area)
 		}
 		if collision {
 			// Response construction
