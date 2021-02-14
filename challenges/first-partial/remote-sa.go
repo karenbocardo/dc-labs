@@ -14,9 +14,27 @@ type Point struct {
 	X, Y float64
 }
 
+// Vector is a structure that represents a vector with magnitude and direction
+type Vector struct {
+	X, Y float64
+}
+
+// Turns two Points into a Vector
+func toVector(a, b Point) Vector {
+	return Vector{b.X - a.X, b.Y - a.Y}
+}
+
+// Calculates cross product between two Vectors
+func crossProduct(a, b Vector) float64 {
+	return (a.X * b.Y) - (a.Y * b.X)
+}
+
 func main() {
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	// \(-2, 2\),\(1, 4\),\(3, 1\),\(-3, -2\),\(0, -3\),\(2, -2\)
+	//points := []Point{{-2, 2}, {1, 4}, {3, 1}, {-3, -2}, {0, -3}, {2, -2}}
+	//fmt.Println(hasCollision(points))
 }
 
 //generatePoints array
@@ -43,6 +61,73 @@ func generatePoints(s string) ([]Point, error) {
 		}
 	}
 	return points, nil
+}
+
+// Checks if point q lies on line segment pr by the three given collinear points
+func onSegment(p, q, r Point) bool {
+	if q.X <= math.Max(p.X, r.X) && q.X >= math.Min(p.X, r.X) &&
+		q.Y <= math.Max(p.Y, r.Y) && q.Y >= math.Min(p.Y, r.Y) {
+		return true
+	}
+	return false
+}
+
+// Finds orientation of a triplet (p on the middle) by using cross product
+func orientation(p, q, r Point) int {
+	pq := toVector(p, q)
+	pr := toVector(p, r)
+	cross := crossProduct(pq, pr)
+	if cross > 0 {
+		return -1 // counterclockwise
+	} else if cross < 0 {
+		return 1 // clockwise
+	} else {
+		return 0 // collinear
+	}
+}
+
+// Finds if two segments formed by four points intersect
+func doIntersect(p1, q1, p2, q2 Point) bool {
+	o1 := orientation(p1, q1, p2)
+	o2 := orientation(p1, q1, q2)
+	o3 := orientation(p2, q2, p1)
+	o4 := orientation(p2, q2, q1)
+	if o1 != o2 && o3 != o4 {
+		return true
+	} else if o1 == 0 && onSegment(p1, p2, q1) {
+		return true
+	} else if o2 == 0 && onSegment(p1, q2, q1) {
+		return true
+	} else if o3 == 0 && onSegment(p2, p1, q2) {
+		return true
+	} else if o4 == 0 && onSegment(p2, q1, q2) {
+		return true
+	}
+	return false
+}
+
+func hasCollision(points []Point) bool {
+	points = append(points, points[0])
+	nPoints := len(points)
+	for i := 0; i < nPoints-1; i++ {
+		p1, q1 := points[i], points[i+1]
+		for j := i + 2; j < nPoints-1; j++ {
+			if i == 0 && j == nPoints-2 {
+				continue
+			}
+			p2, q2 := points[j], points[j+1]
+			fmt.Println("STEP")
+			fmt.Printf("p1[%d]: %v\n", i, p1)
+			fmt.Printf("p2[%d]: %v\n", i+1, p2)
+			fmt.Printf("q1[%d]: %v\n", j, q1)
+			fmt.Printf("q2[%d]: %v\n", j+1, q2)
+			if doIntersect(p1, q1, p2, q2) {
+				return true
+			}
+
+		}
+	}
+	return false
 }
 
 // getArea gets the area inside from a given shape
@@ -93,22 +178,34 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// Logging in the server side
 	log.Printf("Received vertices array: %v", vertices)
 
-	var response string
-	if len(vertices) > 2 {
-		// Results gathering
-		area := getArea(vertices)
-		perimeter := getPerimeter(vertices)
+	nVertices := len(vertices)
 
-		// Response construction
-		response = fmt.Sprintf("Welcome to the Remote Shapes Analyzer\n")
-		response += fmt.Sprintf(" - Your figure has : [%v] vertices\n", len(vertices))
-		response += fmt.Sprintf(" - Vertices        : %v\n", vertices)
-		response += fmt.Sprintf(" - Perimeter       : %v\n", perimeter)
-		response += fmt.Sprintf(" - Area            : %v\n", area)
+	response := fmt.Sprintf("Welcome to the Remote Shapes Analyzer\n")
+	response += fmt.Sprintf(" - Your figure has : [%v] vertices\n", nVertices)
+
+	if nVertices > 2 {
+		collision := false
+		if nVertices > 3 {
+			// check intersection
+			// if there is -> collision = true
+		}
+		if nVertices == 3 || !collision {
+			// Results gathering
+			area := getArea(vertices)
+			perimeter := getPerimeter(vertices)
+
+			// Response construction
+			response += fmt.Sprintf(" - Vertices        : %v\n", vertices)
+			response += fmt.Sprintf(" - Perimeter       : %v\n", perimeter)
+			response += fmt.Sprintf(" - Area            : %v\n", area)
+		}
+		if collision {
+			// Response construction
+			response += fmt.Sprint("ERROR - Your shape has a collision between some lines.\n")
+		}
+
 	} else {
 		// Response construction
-		response = fmt.Sprintf("Welcome to the Remote Shapes Analyzer\n")
-		response += fmt.Sprintf(" - Your figure has : [%v] vertices\n", len(vertices))
 		response += fmt.Sprint("ERROR - Your shape is not compliying with the minimum number of vertices.\n")
 	}
 	// Send response to client
