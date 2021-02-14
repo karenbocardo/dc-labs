@@ -114,15 +114,9 @@ func hasCollision(points []Point) bool {
 				continue
 			}
 			p2, q2 := points[j], points[j+1]
-			fmt.Println("STEP")
-			fmt.Printf("p1[%d]: %v\n", i, p1)
-			fmt.Printf("p2[%d]: %v\n", i+1, p2)
-			fmt.Printf("q1[%d]: %v\n", j, q1)
-			fmt.Printf("q2[%d]: %v\n", j+1, q2)
 			if doIntersect(p1, q1, p2, q2) {
 				return true
 			}
-
 		}
 	}
 	return false
@@ -184,6 +178,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if nVertices > 2 {
 		collision := false
 		if nVertices > 3 {
+			// check collisions
 			if hasCollision(vertices) {
 				collision = true
 			}
@@ -194,17 +189,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			perimeter := getPerimeter(vertices)
 
 			// Response construction
-			response += fmt.Sprintf(" - Vertices    : %v\n", vertices)
-			response += fmt.Sprintf(" - Perimeter   : %v\n", perimeter)
-			response += fmt.Sprintf(" - Area        : %v\n", area)
+			response += fmt.Sprintf(" - Vertices        : %v\n", vertices)
+			response += fmt.Sprintf(" - Perimeter       : %v\n", perimeter)
+			response += fmt.Sprintf(" - Area            : %v\n", area)
 		}
 		if collision {
-			// Response construction
 			response += fmt.Sprint("ERROR - Your shape has a collision between some lines.\n")
 		}
 
 	} else {
-		// Response construction
 		response += fmt.Sprint("ERROR - Your shape is not compliying with the minimum number of vertices.\n")
 	}
 	// Send response to client
