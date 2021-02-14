@@ -36,7 +36,6 @@ func main() {
 
 //generatePoints array
 func generatePoints(s string) ([]Point, error) {
-
 	points := []Point{}
 
 	s = strings.Replace(s, "(", "", -1)
@@ -196,7 +195,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		if collision {
 			response += fmt.Sprint("ERROR - Your shape has a collision between some lines.\n")
 		}
-
 	} else {
 		response += fmt.Sprint("ERROR - Your shape is not compliying with the minimum number of vertices.\n")
 	}
