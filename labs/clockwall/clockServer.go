@@ -1,9 +1,6 @@
 /*
-This program must accept the -port parameter
-TZ=US/Eastern    go run serverClock.go -port 8010
+Clock Server is a concurrent TCP server that writes the time of a given timezone.
 */
-
-// Clock Server is a concurrent TCP server that periodically writes the time.
 package main
 
 import (
@@ -16,6 +13,7 @@ import (
 	"time"
 )
 
+// Connects to server and writes the timezone into it
 func handleConn(c net.Conn, timeOnTimezone string) {
 	defer c.Close()
 	_, err := io.WriteString(c, timeOnTimezone)
@@ -24,8 +22,8 @@ func handleConn(c net.Conn, timeOnTimezone string) {
 	}
 }
 
+// Reads the flag and enviroment variable values
 func readParameters() (string, int) {
-	// read parameters
 	timezone := os.Getenv("TZ")                      // TZ parameter
 	var port = flag.Int("port", 9000, "port number") // port parameter
 	flag.Parse()
@@ -33,6 +31,9 @@ func readParameters() (string, int) {
 }
 
 // TimeIn returns the time in UTC if the name is "" or "UTC"
+// It returns the local time if the name is "Local".
+// Otherwise, the name is taken to be a location name in
+// the IANA Time Zone database, such as "Africa/Lagos".
 func TimeIn(t time.Time, name string) (time.Time, error) {
 	loc, err := time.LoadLocation(name)
 	if err == nil {
@@ -41,8 +42,9 @@ func TimeIn(t time.Time, name string) (time.Time, error) {
 	return t, err
 }
 
+// Returns a formatted string with the given timezone and its time
+// by using the TimeIn function
 func getTime(timezone string) string {
-
 	t, err := TimeIn(time.Now(), timezone)
 	if err == nil {
 		return fmt.Sprintf("%v\t: %v\n", t.Location(), t.Format("15:04:05"))
@@ -53,6 +55,7 @@ func getTime(timezone string) string {
 	}
 }
 
+// main goroutine
 func main() {
 	// read parameters
 	timezone, port := readParameters()
